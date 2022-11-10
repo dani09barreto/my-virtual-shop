@@ -1,8 +1,9 @@
-package com.subdb.Repository;
+package com.serverComprar.Repository;
+
 
 import java.util.ArrayList;
+import com.serverComprar.model.Product;
 
-import com.subdb.Model.Product;
 
 public interface IProductRepository {
     ArrayList <Product> getProducts ();

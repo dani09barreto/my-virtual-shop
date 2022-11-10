@@ -1,10 +1,10 @@
-package com.subdb.Controller;
+package com.serverComprar.Controller;
 
 import java.util.ArrayList;
 
-import com.subdb.Model.Product;
-import com.subdb.Repository.IProductRepository;
-import com.subdb.Service.ProductRepositotyImp;
+import com.serverComprar.Repository.IProductRepository;
+import com.serverComprar.Service.ProductRepositotyImp;
+import com.serverComprar.model.Product;
 
 import lombok.Getter;
 
@@ -21,7 +21,15 @@ public class ControllerShop {
         if (productTemp == null){
             return false;
         }
-        int updated = productRepository.updateProduct(productTemp);
+        int cantProduct = productTemp.getCant();
+        cantProduct --;
+        if (cantProduct < 0){
+            return false;
+        }
+        
+        productTemp.setCant(cantProduct);
+
+        int updated  = productRepository.updateProduct(productTemp);
 
         if (updated == 0){
             return false;
@@ -29,5 +37,4 @@ public class ControllerShop {
 
         return true;
     }
-
 }

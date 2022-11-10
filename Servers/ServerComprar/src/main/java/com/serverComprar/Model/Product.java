@@ -1,4 +1,4 @@
-package com.subdb.Model;
+package com.serverComprar.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
