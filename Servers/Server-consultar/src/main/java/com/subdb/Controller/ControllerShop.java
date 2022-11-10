@@ -21,7 +21,15 @@ public class ControllerShop {
         if (productTemp == null){
             return false;
         }
-        int updated = productRepository.updateProduct(productTemp);
+        int cantProduct = productTemp.getCant();
+        cantProduct --;
+        if (cantProduct < 0){
+            return false;
+        }
+        
+        productTemp.setCant(cantProduct);
+
+        int updated  = productRepository.updateProduct(productTemp);
 
         if (updated == 0){
             return false;
