@@ -25,7 +25,7 @@ public class Token {
     public static Token getAuthToken (String user, String pass){
         try {
             Gson gson = new Gson();
-            URL url = new URL ("http://10.195.68.117:8080/parking/token");
+            URL url = new URL ("http://10.43.100.213:8080/token");
             String encoding = Base64.getEncoder().encodeToString((user + ":" + pass).getBytes());
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();

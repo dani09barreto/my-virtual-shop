@@ -78,8 +78,6 @@ public class Broker{
                     }
                     frame.destroy();
                 }
-                System.out.println(cont);
-                cont ++;
                 if (poller2.pollin(0)){
                     System.out.println("rest");
                     String restString = rest.recvStr();
@@ -88,21 +86,8 @@ public class Broker{
                         break;
                     restSend.send(restString);
                 }
-
-                if (poller2.pollin(1)){
-                    ZFrame frame = ZFrame.recvFrame(restSend);
-                    if (frame == null)
-                        break;
-                    //  Event is one byte 0=unsub or 1=sub, followed by topic
-                    byte[] event = frame.getData();
-                    if (event[0] == 1) {
-                        String topic = new String(event, 1, event.length - 1, ZMQ.CHARSET);
-                        System.out.println(topic);
-                        restSend.sendMore(topic);
-                    }
-                    frame.destroy();                    
-                }
-
+                System.out.println(cont);
+                cont ++;
             }
         }
     }
