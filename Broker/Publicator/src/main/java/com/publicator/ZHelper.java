@@ -1,4 +1,4 @@
-package com.publicador;
+package com.publicator;
 
 import java.math.BigInteger;
 import java.util.Arrays;
