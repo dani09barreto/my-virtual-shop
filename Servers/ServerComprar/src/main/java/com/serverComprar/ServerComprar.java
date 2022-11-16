@@ -49,9 +49,7 @@ public class ServerComprar {
                     }
                     
                 }
-
                 String resp = controllerShop.serializeSale(saleProducts);
-
                 pubRest.send(resp);
             }
         }
