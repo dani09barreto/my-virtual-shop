@@ -9,8 +9,6 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ.Poller;
 import org.zeromq.ZMQ.Socket;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.subdb.Controller.ControllerClient;
 import com.subdb.Model.Product;
 import com.subdb.Model.Sale;
@@ -49,7 +47,7 @@ public class Cliente {
                 System.out.println("\t1. Listar Productos");
                 System.out.println("\t2. Comprar Producto");
                 System.out.println("\t3.Salir");
-                System.out.print("\tOpcion:");
+                System.out.print("\tOpcion: ");
                 opcion = sc.nextInt();
 
                 switch (opcion) {
@@ -91,7 +89,7 @@ public class Cliente {
                 String reply = client.recvStr();
                 if (reply == null)
                     break; // Interrupted
-                controllerClient.setProducts(deserializeMessage(reply));
+                controllerClient.setProducts(controllerClient.deserializeMessage(reply));
                 retriesLeft = REQUEST_RETRIES;
                 expect_reply = 0;
 
@@ -115,16 +113,6 @@ public class Cliente {
         }
         controllerClient.showProducts();
         poller.unregister(client);
-    }
-
-    public static ArrayList <Product> deserializeMessage(String message){
-        ArrayList <Product> productsTemp = new ArrayList<>();
-        Gson gson = new Gson();
-        java.lang.reflect.Type userListType = new TypeToken<ArrayList<Product>>() {
-        }.getType();
-        productsTemp = gson.fromJson(message, userListType);
-
-        return productsTemp;
     }
 
     public static void buyProduct(Socket client, ZContext ctx){

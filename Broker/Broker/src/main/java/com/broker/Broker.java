@@ -1,6 +1,7 @@
 package com.broker;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.zeromq.ZMQ.Poller;
 import org.zeromq.ZMQ.Socket;
 
 public class Broker{
+    private final static int REQUEST_TIMEOUT = 60;
     public static void main(String[] args) {
         try (ZContext context = new ZContext()) {
             Socket frontend = context.createSocket(SocketType.SUB);
@@ -39,10 +41,13 @@ public class Broker{
             poller2.register(rest, Poller.POLLIN);
             poller2.register(restSend, Poller.POLLIN);
 
+            boolean activateTime = false;
+            String serverActivate = "";
+
             //  .split main poll loop
             //  We route topic updates from frontend to backend, and we handle
             //  subscriptions by sending whatever we cached, if anything:
-            int cont = 0;
+            int cont = 1;
             while (true) {
                 if (poller.poll(1000) == -1)
                     break; //  Interrupted
@@ -69,11 +74,22 @@ public class Broker{
                     byte[] event = frame.getData();
                     if (event[0] == 1) {
                         String topic = new String(event, 1, event.length - 1, ZMQ.CHARSET);
-                        System.out.printf("Sending cached topic %s\n", topic);
-                        String previous = cache.get(topic);
-                        if (previous != null) {
-                            backend.sendMore(topic);
-                            backend.send(previous);
+                        System.out.printf("servidor conectado con topico %s\n", topic);
+                    }
+                    if (event[0] == 0) {
+                        String topic = new String(event, 1, event.length - 1, ZMQ.CHARSET);
+                        System.out.printf("servidor desconectado con topico %s\n", topic);
+                        if (topic.equals("Comprar")){
+                            activateTime = true;
+                            backend.sendMore("Error");
+                            serverActivate = "1";
+                            backend.send(serverActivate);
+                        }
+                        else if (topic.equals("Consultar")){
+                            activateTime = true;
+                            backend.sendMore("Error");
+                            serverActivate = "2";
+                            backend.send(serverActivate);
                         }
                     }
                     frame.destroy();
@@ -86,8 +102,17 @@ public class Broker{
                         break;
                     restSend.send(restString);
                 }
-                System.out.println(cont);
-                cont ++;
+                if (cont == REQUEST_TIMEOUT){
+                    System.out.println("Se envia mensaje de ok sevidor devio volver");
+                    backend.sendMore("OK");
+                    backend.send(serverActivate);
+                    activateTime = false;
+                    cont = 0;  
+                }
+                if (activateTime){
+                    System.out.println("Timer : " + cont);
+                    cont ++;
+                }
             }
         }
     }

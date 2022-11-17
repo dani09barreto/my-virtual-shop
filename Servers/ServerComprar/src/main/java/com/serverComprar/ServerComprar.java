@@ -1,15 +1,14 @@
 package com.serverComprar;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Socket;
 
+import com.google.gson.Gson;
 import com.serverComprar.Controller.ControllerShop;
 import com.serverComprar.model.Product;
 import com.serverComprar.model.Sale;
@@ -27,6 +26,10 @@ public class ServerComprar {
             pubRest.connect("tcp://10.43.100.225:5559");
 
             String subscription = "Comprar";
+            String subscriptionError = "Error";
+            String subsOk = "OK";
+            subscriber.subscribe(subscriptionError);
+            subscriber.subscribe(subsOk);
             subscriber.subscribe(subscription.getBytes(ZMQ.CHARSET));
             while (true) {
                 ArrayList <Product> buyProducts = new ArrayList<>();
@@ -35,22 +38,46 @@ public class ServerComprar {
                 if (topic == null)
                     break;
                 String data = subscriber.recvStr();
-                assert (topic.equals(subscription));
-                buyProducts = controllerShop.deserializeMessage(data);
+                if (topic.equals("Comprar")){
+                    System.out.println("Solicitud: " + topic);
+                    buyProducts = controllerShop.deserializeMessage(data);
 
-                for (Product pr : buyProducts){
-                    if (controllerShop.buyProduct(pr.getId())){
-                        Sale saleTemp = new Sale(pr.getId(), 1);
-                        saleProducts.add(saleTemp);
+                    for (Product pr : buyProducts){
+                        if (controllerShop.buyProduct(pr.getId())){
+                            Sale saleTemp = new Sale(pr.getId(), 1);
+                            saleProducts.add(saleTemp);
+                        }
+                        else{
+                            Sale saleTemp = new Sale(pr.getId(), 0);
+                            saleProducts.add(saleTemp);
+                        }
+                        
                     }
-                    else{
-                        Sale saleTemp = new Sale(pr.getId(), 0);
-                        saleProducts.add(saleTemp);
-                    }
-                    
+                    String resp = controllerShop.serializeSale(saleProducts);
+                    System.out.println("Respuesta: " + resp);
+                    pubRest.send(resp);
                 }
-                String resp = controllerShop.serializeSale(saleProducts);
-                pubRest.send(resp);
+                else if (topic.equals("Consultar")){
+                    System.out.println("Solicitud: " + topic);
+                    Gson gson = new Gson();
+                    ArrayList <Product> products = new ArrayList<>();
+                    products = controllerShop.listProducts();
+                    String resp = gson.toJson(products);
+                    System.out.println("Resp: " + resp);
+                    pubRest.send(resp);
+                }
+                else if (topic.equals("Error")){
+                    if (data.equals("2")){
+                        System.out.println("Suscribiendose a topico consultar");
+                        subscriber.subscribe("Consultar");
+                    }
+                }
+                else if (topic.equals("OK")){
+                    if (data.equals("2")){
+                        System.out.println("desuscribiendose a topico consultar");
+                        subscriber.unsubscribe("Consultar");
+                    }
+                }
             }
         }
     }

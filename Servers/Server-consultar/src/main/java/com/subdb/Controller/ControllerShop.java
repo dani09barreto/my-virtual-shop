@@ -2,7 +2,10 @@ package com.subdb.Controller;
 
 import java.util.ArrayList;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.subdb.Model.Product;
+import com.subdb.Model.Sale;
 import com.subdb.Repository.IProductRepository;
 import com.subdb.Service.ProductRepositotyImp;
 
@@ -36,6 +39,22 @@ public class ControllerShop {
         }
 
         return true;
+    }
+
+    public ArrayList <Product> deserializeMessage(String message){
+        ArrayList <Product> productsTemp = new ArrayList<>();
+        Gson gson = new Gson();
+        java.lang.reflect.Type userListType = new TypeToken<ArrayList<Product>>() {
+        }.getType();
+        productsTemp = gson.fromJson(message, userListType);
+
+        return productsTemp;
+    }
+
+    public String serializeSale (ArrayList <Sale> saleProducts){
+        Gson gson = new Gson();
+        String str = gson.toJson(saleProducts);
+        return str;
     }
 
 }
